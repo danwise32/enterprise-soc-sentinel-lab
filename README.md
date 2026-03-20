@@ -30,7 +30,7 @@ Microsoft Sentinel (SIEM) and Microsoft Entra ID (IAM).
 - SOC incident investigation and reporting
 - Security control implementation (MFA, Conditional Access, RBAC)
 ## Screenshots
-[Add screenshots of your Sentinel incidents, KQL results, and Entra ID config]
+
 ## Project Status
 In progress — lab environment being configured. Scenarios and detections will be added as the project develops.
 ## By Daniel Owoeye-wise
