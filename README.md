@@ -32,5 +32,5 @@ Microsoft Sentinel (SIEM) and Microsoft Entra ID (IAM).
 ## Screenshots
 [Add screenshots of your Sentinel incidents, KQL results, and Entra ID config]
 ## Project Status
-Completed — all 5 scenarios simulated, detected, investigated, and documented
+In progess
 ## By Daniel Owoeye-wise
