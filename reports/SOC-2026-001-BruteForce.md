@@ -30,7 +30,7 @@ On 28 March 2026 at 16:56 UTC, Microsoft Sentinel detected a brute force attack 
 ## Impact Assessment
 
 - Account confirmed compromised
-- Standard user — no elevated privileges
+- Standard user: no elevated privileges
 - Access to Microsoft 365 services during compromise window
 - No evidence of lateral movement or data exfiltration
 
@@ -38,7 +38,7 @@ On 28 March 2026 at 16:56 UTC, Microsoft Sentinel detected a brute force attack 
 
 ## Verdict
 
-Confirmed True Positive — 32 automated failures from single IP followed by successful login is consistent with automated brute force tooling.
+Confirmed True Positive: 32 automated failures from single IP followed by successful login is consistent with automated brute force tooling.
 
 ---
 
