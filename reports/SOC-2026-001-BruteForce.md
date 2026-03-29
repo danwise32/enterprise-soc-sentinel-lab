@@ -13,7 +13,7 @@
 
 ## Incident Summary
 
-On 28 March 2026 at 16:56 UTC, Microsoft Sentinel detected a brute force attack against compromiseduser@cyberbulwork.onmicrosoft.com. A total of 32 failed login attempts were recorded from IP 82.5.115.116 over 90 minutes, followed by a successful login at 16:57 UTC. The account had no MFA and no Conditional Access policy applied.
+On 28 March 2026 at 16:56 UTC, Microsoft Sentinel detected a brute force attack against compromiseduser@cyberbulwork.onmicrosoft.com. A total of 32 failed login attempts were recorded from IP 82.5.115.116 over 90 minutes, followed by a successful login at 18:15 UTC. The account had no MFA and no Conditional Access policy applied.
 
 ---
 
@@ -21,7 +21,7 @@ On 28 March 2026 at 16:56 UTC, Microsoft Sentinel detected a brute force attack 
 
 - 32 failed login attempts with ResultType 50126
 - All attempts from single IP: 82.5.115.116 (GB)
-- Successful login at 16:57 UTC from same IP
+- Successful login at 18:15 UTC from same IP
 - No MFA configured on account
 - Sentinel analytics rule automatically raised High severity incident
 
