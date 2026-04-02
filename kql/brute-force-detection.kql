@@ -1,1 +1,28 @@
+// ============================================================
+// DETECTION: Brute Force Attack — Multiple Failed Logins
+// Scenario: SOC-2026-001
+// Table: SigninLogs
+// MITRE ATT&CK: T1110 — Brute Force (Credential Access)
+// Threshold: 5+ failures within 10 minutes from same account
+// ============================================================
 
+SigninLogs
+| where TimeGenerated > ago(1h)
+| where ResultType != 0
+| where ResultType in ("50126", "50053", "50055")
+| summarize
+    FailureCount = count(),
+    StartTime = min(TimeGenerated),
+    EndTime = max(TimeGenerated),
+    IPAddresses = make_set(IPAddress),
+    Locations = make_set(Location)
+    by UserPrincipalName, bin(TimeGenerated, 10m)
+| where FailureCount >= 5
+| project
+    StartTime,
+    EndTime,
+    UserPrincipalName,
+    FailureCount,
+    IPAddresses,
+    Locations
+| order by FailureCount desc
