@@ -1,0 +1,37 @@
+// ============================================================
+// DETECTION: Impossible Travel — Login from Multiple IPs
+// Scenario: SOC-2026-002
+// Table: SigninLogs
+// MITRE ATT&CK: T1078 — Valid Accounts (Initial Access)
+// Threshold: Two successful logins from different IPs within 5 hours
+// ============================================================
+
+SigninLogs
+| where TimeGenerated > ago(5h)
+| where ResultType == 0
+| project
+    TimeGenerated,
+    UserPrincipalName,
+    IPAddress,
+    CountryOrRegion = tostring(LocationDetails.countryOrRegion),
+    City = tostring(LocationDetails.city)
+| order by UserPrincipalName asc, TimeGenerated asc
+| serialize
+| extend
+    NextLoginTime = next(TimeGenerated),
+    NextIP = next(IPAddress),
+    NextCity = next(City),
+    NextUser = next(UserPrincipalName)
+| where UserPrincipalName == NextUser
+| where IPAddress != NextIP
+| where IPAddress != "" and NextIP != ""
+| project
+    UserPrincipalName,
+    FirstLoginTime = TimeGenerated,
+    FirstIP = IPAddress,
+    FirstCity = City,
+    FirstCountry = CountryOrRegion,
+    SecondLoginTime = NextLoginTime,
+    SecondIP = NextIP,
+    SecondCity = NextCity,
+    TimeBetweenLogins = (NextLoginTime - TimeGenerated)
