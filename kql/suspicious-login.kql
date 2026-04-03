@@ -29,3 +29,21 @@ SigninLogs
     LastSeen,
     HoursList
 | order by DistinctIPs desc
+
+// ============================================================
+// INVESTIGATION QUERY (run manually during incident response)
+// ============================================================
+
+SigninLogs
+| where TimeGenerated > ago(2d)
+| where UserPrincipalName contains "standarduser"
+| where ResultType == 0
+| project
+    TimeGenerated,
+    UserPrincipalName,
+    IPAddress,
+    CountryOrRegion = tostring(LocationDetails.countryOrRegion),
+    City = tostring(LocationDetails.city),
+    AppDisplayName,
+    hourofday(TimeGenerated)
+| order by TimeGenerated asc
