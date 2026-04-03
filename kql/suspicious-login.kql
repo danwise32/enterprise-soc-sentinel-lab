@@ -1,3 +1,31 @@
-// DETECTION: Suspicious Login Behaviour — Multiple IPs and Unusual Hours
+// ============================================================
+// DETECTION: Suspicious Login — Multiple IPs Same User
 // Scenario: SOC-2026-003
-// Coming soon — to be added after simulation
+// Table: SigninLogs
+// MITRE ATT&CK: T1078 — Valid Accounts (Initial Access)
+// Severity: Medium
+// Threshold: 3 or more distinct IP addresses within 2 days
+// Rule frequency: Every 1 hour
+// ============================================================
+
+SigninLogs
+| where TimeGenerated > ago(2d)
+| where ResultType == 0
+| summarize
+    DistinctIPs = dcount(IPAddress),
+    LoginCount = count(),
+    IPList = make_set(IPAddress),
+    FirstSeen = min(TimeGenerated),
+    LastSeen = max(TimeGenerated),
+    HoursList = make_set(hourofday(TimeGenerated))
+    by UserPrincipalName
+| where DistinctIPs >= 3
+| project
+    UserPrincipalName,
+    DistinctIPs,
+    LoginCount,
+    IPList,
+    FirstSeen,
+    LastSeen,
+    HoursList
+| order by DistinctIPs desc
