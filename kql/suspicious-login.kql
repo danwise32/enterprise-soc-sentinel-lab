@@ -1,11 +1,10 @@
 // ============================================================
-// DETECTION: Suspicious Login — Multiple IPs Same User
+// DETECTION RULE QUERY — runs automatically in Sentinel
 // Scenario: SOC-2026-003
-// Table: SigninLogs
-// MITRE ATT&CK: T1078 — Valid Accounts (Initial Access)
+// MITRE ATT&CK: T1078 Valid Accounts (Initial Access)
 // Severity: Medium
-// Threshold: 3 or more distinct IP addresses within 2 days
-// Rule frequency: Every 1 hour
+// Threshold: 3 or more distinct IPs within 2 days
+// Frequency: Every 1 hour
 // ============================================================
 
 SigninLogs
@@ -31,7 +30,7 @@ SigninLogs
 | order by DistinctIPs desc
 
 // ============================================================
-// INVESTIGATION QUERY (run manually during incident response)
+// INVESTIGATION QUERY — run manually during incident response
 // ============================================================
 
 SigninLogs
