@@ -30,6 +30,6 @@
 |---|---|---|---|
 | SOC-2026-001 | Brute Force | High | Investigated |
 | SOC-2026-002 | Impossible Travel | High | Investigated |
-| SOC-2026-003 | Suspicious Login | Medium | Pending |
+| SOC-2026-003 | Suspicious Login | Medium | Investigated |
 | SOC-2026-004 | Privilege Escalation | Critical | Pending |
 | SOC-2026-005 | MFA Bypass | High | Pending |
