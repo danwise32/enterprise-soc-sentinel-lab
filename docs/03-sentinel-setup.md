@@ -19,8 +19,8 @@
 | Rule Name | Severity | MITRE Tactic | Technique | Frequency |
 |---|---|---|---|---|
 | Brute Force Attack — Multiple Failed Logins | High | Credential Access | T1110 | Every 5 minutes |
-| Impossible Travel — Login from Multiple IPs | High | Initial Access | T1078 | Every 5 minutes |
-| Suspicious Login Behaviour | Medium | Initial Access | T1078 | Every 5 minutes |
+| Impossible Travel — Login from Multiple IPs | High | Initial Access | T1078 | Every 1 hour |
+| Suspicious Login — Multiple IPs Same User | Medium | Initial Access | T1078 | Every 1 hour |
 | Privilege Escalation — Admin Role Assignment | Critical | Privilege Escalation | T1078.004 | Every 5 minutes |
 | MFA Bypass Attempt | High | Credential Access | T1556.006 | Every 5 minutes |
 
