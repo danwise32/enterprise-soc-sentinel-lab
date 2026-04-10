@@ -25,34 +25,6 @@ AuditLogs
 | order by TimeGenerated desc
 
 // ============================================================
-// STRICT VERSION — filters specific high value roles only
-// Use this version if the broad version generates too many
-// false positives in a larger environment
-// ============================================================
-
-// AuditLogs
-// | where TimeGenerated > ago(1h)
-// | where OperationName == "Add member to role"
-// | extend
-//     AssignedRole = tostring(TargetResources[0].displayName),
-//     TargetUser = tostring(TargetResources[1].userPrincipalName),
-//     PerformedBy = tostring(InitiatedBy.user.userPrincipalName)
-// | where AssignedRole in (
-//     "Global Administrator",
-//     "Privileged Role Administrator",
-//     "Security Administrator",
-//     "User Access Administrator",
-//     "Exchange Administrator"
-// )
-// | project
-//     TimeGenerated,
-//     AssignedRole,
-//     TargetUser,
-//     PerformedBy,
-//     Result
-// | order by TimeGenerated desc
-
-// ============================================================
 // INVESTIGATION QUERY — run manually during incident response
 // ============================================================
 
