@@ -54,19 +54,13 @@ The remediation verification query also confirmed the role was subsequently remo
 
 ```kql
 AuditLogs
-| where TimeGenerated > ago(1h)
-| where OperationName contains "Add member to role"
-| extend
-    AssignedRole = tostring(TargetResources[0].displayName),
-    TargetUser = tostring(TargetResources[1].userPrincipalName),
-    PerformedBy = tostring(InitiatedBy.user.userPrincipalName)
-| where isnotempty(AssignedRole)
-| project
-    TimeGenerated,
-    AssignedRole,
-    TargetUser,
-    PerformedBy,
-    Result
+| where OperationName == "Add member to role"
+| where Result == "success"
+| extend PerformedBy = tostring(InitiatedBy.user.userPrincipalName)
+| extend TargetUser = tostring(TargetResources[0].userPrincipalName)
+| extend RoleAssigned = tostring(TargetResources[0].modifiedProperties[0].newValue)
+| where RoleAssigned has "Global Administrator"
+| project TimeGenerated, PerformedBy, TargetUser, RoleAssigned, Result
 | order by TimeGenerated desc
 ```
 
