@@ -1,3 +1,70 @@
-// DETECTION: MFA Bypass — Legacy Auth and MFA Fatigue
+// ============================================================
+// DETECTION RULE QUERY — runs automatically in Sentinel
 // Scenario: SOC-2026-005
-// Coming soon — to be added after simulation
+// Table: SigninLogs
+// MITRE ATT&CK: T1556.006 Multi-Factor Authentication
+// Tactic: Credential Access
+// Severity: High
+// Detects 3 or more MFA failures within 30 minutes
+// Frequency: Every 5 minutes
+// ============================================================
+
+SigninLogs
+| where TimeGenerated > ago(1h)
+| where ResultType in ("500121", "50076", "50074", "500133")
+| summarize
+    MFAFailureCount = count(),
+    FirstFailure = min(TimeGenerated),
+    LastFailure = max(TimeGenerated),
+    IPAddresses = make_set(IPAddress),
+    Locations = make_set(Location)
+    by UserPrincipalName, bin(TimeGenerated, 30m)
+| where MFAFailureCount >= 3
+| project
+    UserPrincipalName,
+    MFAFailureCount,
+    FirstFailure,
+    LastFailure,
+    IPAddresses,
+    Locations
+| order by MFAFailureCount desc
+
+// ============================================================
+// INVESTIGATION QUERY — run manually during incident response
+// ============================================================
+
+SigninLogs
+| where TimeGenerated > ago(3h)
+| where UserPrincipalName == "labadmin@cyberbulwork.onmicrosoft.com"
+| where ResultType in ("500121", "50076", "50074", "500133")
+| summarize
+    MFAFailureCount = count(),
+    FirstFailure = min(TimeGenerated),
+    LastFailure = max(TimeGenerated),
+    IPAddresses = make_set(IPAddress)
+    by UserPrincipalName
+
+// ============================================================
+// SUCCESS CHECK QUERY — did the attack succeed?
+// Run this after containment to check if any prompt was approved
+// If this returns rows the account was compromised
+// ============================================================
+
+SigninLogs
+| where TimeGenerated between (datetime(2026-04-10T18:15:00Z) .. datetime(2026-04-10T18:34:00Z))
+| where UserPrincipalName == "labadmin@cyberbulwork.onmicrosoft.com"
+| where ResultType == 0
+| project
+    TimeGenerated,
+    UserPrincipalName,
+    IPAddress,
+    ResultType,
+    AppDisplayName
+
+// ============================================================
+// MFA RESULT TYPE REFERENCE
+// 500121 — MFA denied by user (No it was not me)
+// 50076  — MFA not satisfied
+// 50074  — MFA required but not completed (session timeout)
+// 500133 — MFA token expired
+// ============================================================
