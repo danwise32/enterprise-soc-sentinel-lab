@@ -32,6 +32,44 @@ This project simulates a real-world enterprise SOC environment from the ground u
 
 ---
 
+## 🏗️ Environment Setup
+
+### Microsoft Entra ID — Identity Configuration
+
+Three user personas were created to simulate a realistic enterprise identity environment:
+
+| Persona | Role | MFA | Purpose |
+|---------|------|-----|---------|
+| Lab Admin | Global Administrator | ✅ Enforced | Target for privilege escalation and MFA bypass scenarios |
+| Standard User | Standard Member | ✅ Enforced | Used in impossible travel and suspicious login scenarios |
+| Compromised User | Standard Member | ❌ None | Intentionally vulnerable — target for brute force simulation |
+
+**MFA Configuration**
+
+![MFA Configuration](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/01-entra-setup/setupmfa-configuration.png)
+
+**Conditional Access — Require MFA Policy**
+
+![Conditional Access MFA Policy](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/01-entra-setup/setupca-policy-require-mfa.png)
+
+**Conditional Access — Block Legacy Authentication**
+
+![Block Legacy Auth Policy](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/01-entra-setup/setupca-policy-block-legacy-auth.png)
+
+**Conditional Access — Block High Risk Sign-ins**
+
+![Block High Risk Policy](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/01-entra-setup/setupca-policy-block-high-risk.png)
+
+---
+
+### Microsoft Sentinel — SIEM Setup
+
+**Entra ID Data Connector — Log Ingestion Configured**
+
+![Entra ID Connector](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/02-sentinel-setup/entra-id-connector-config.png)
+
+---
+
 ## ⚔️ Attack Scenarios Simulated & Investigated
 
 All 5 scenarios were simulated end-to-end: attack executed → KQL rule triggered → Sentinel alert fired → full investigation conducted → incident report written.
@@ -48,10 +86,34 @@ All 5 scenarios were simulated end-to-end: attack executed → KQL rule triggere
 
 ### 1. Brute Force Attack
 
-**What happened:** 32 failed login attempts against a user account. Account was compromised in 64 seconds.  
+**What happened:** 32 failed login attempts against a user account with no MFA. Account was compromised in 64 seconds.  
 **Detection:** KQL analytics rule triggered on failed login threshold breach.  
-**Key finding:** No MFA on target account enabled rapid compromise post-credential guess.  
-**Remediation:** Enforce MFA organisation-wide; implement account lockout policy after 5 failed attempts.
+**Key finding:** Absence of MFA enabled rapid compromise once credentials were guessed.  
+**Remediation:** MFA enforced organisation-wide; account lockout after 5 failed attempts.
+
+**Analytics Rule**
+
+![Brute Force Analytics Rule](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/03-brute-force/brute-forceanalytics-rule-brute-force.png)
+
+**Failed Login Attempts in SigninLogs**
+
+![Failed Login Attempts](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/03-brute-force/brute-forcefailed-login-attempt.png)
+
+**KQL Detection Results**
+
+![KQL Brute Force Results](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/03-brute-force/brute-forcekql-brute-force-results.png)
+
+**Sentinel Incident Raised**
+
+![Sentinel Incident](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/03-brute-force/brute-forcesentinel-incident-raised.png)
+
+**Investigation Graph**
+
+![Investigation Graph](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/03-brute-force/brute-forceinvestigation-graph.png)
+
+**Successful Login After Compromise**
+
+![Successful Login After Brute Force](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/03-brute-force/brute-forcesuccessful-login-after-brute-force.png)
 
 ---
 
@@ -59,51 +121,140 @@ All 5 scenarios were simulated end-to-end: attack executed → KQL rule triggere
 
 **What happened:** Two successful logins from geographically distant locations just 6 minutes apart — physically impossible travel time.  
 **Detection:** KQL query analysed sign-in locations and timestamps to flag geographic anomaly.  
-**Key finding:** Credential reuse across regions indicated account compromise or VPN misuse.  
-**Remediation:** Block legacy authentication; implement Conditional Access policies restricting sign-in by location.
+**Key finding:** Credential reuse across regions indicated account compromise.  
+**Remediation:** Conditional Access policies restricting sign-in by Named Locations implemented.
+
+**Analytics Rule**
+
+![Impossible Travel Analytics Rule](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/04-impossible-travel/impossible-travelanalytics-rule.png)
+
+**Login 1 — UK Laptop**
+
+![Login 1 UK](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/04-impossible-travel/impossible-travellogin-1-uk-laptop.png)
+
+**Login 2 — Mobile Device**
+
+![Login 2 Mobile](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/04-impossible-travel/impossible-travellogin-2-mobile.jpeg)
+
+**KQL Detection Results**
+
+![KQL Detection](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/04-impossible-travel/impossible-travelkql-detection-results.png)
+
+**Investigation Graph**
+
+![Investigation Graph](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/04-impossible-travel/impossible-travelinvestigation-graph.png)
+
+**Sentinel Both Incidents**
+
+![Sentinel Incidents](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/04-impossible-travel/impossible-travelsentinel-both-incidents..png)
 
 ---
 
 ### 3. Suspicious Login Behaviour
 
-**What happened:** Login activity detected from 3 distinct IP addresses within a short window, including a ProtonVPN Netherlands exit node.  
-**Detection:** KQL rule flagged multiple distinct IPs and off-hours login timing anomaly.  
-**Key finding:** VPN usage to mask origin combined with unusual login hours indicated malicious intent.  
-**Remediation:** Enforce Named Locations in Conditional Access; flag VPN exit node sign-ins for review.
+**What happened:** Login activity from 3 distinct IPs including a ProtonVPN Netherlands exit node, combined with off-hours timing.  
+**Detection:** KQL rule flagged multiple distinct IPs and anomalous login timing.  
+**Key finding:** VPN usage to mask origin combined with unusual hours indicated malicious intent.  
+**Remediation:** Named Locations enforced in Conditional Access; VPN exit nodes flagged for monitoring.
+
+**KQL Distinct IPs Results**
+
+![KQL Distinct IPs](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/05-suspicious-login/suspicious-loginkql-distinct-ips.png)
+
+**Incident Details**
+
+![Incident Details](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/05-suspicious-login/suspicious-loginincident-details.png)
+
+**Investigation Graph**
+
+![Investigation Graph](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/05-suspicious-login/suspicious-logininvestigation-graph.png)
+
+**Sentinel Incidents Panel**
+
+![Sentinel Incidents](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/05-suspicious-login/suspicious-loginsentinel-incidents-panel.png)
 
 ---
 
 ### 4. Privilege Escalation
 
-**What happened:** Global Administrator role silently assigned to a standard user account with no change request or approval.  
+**What happened:** Global Administrator role silently assigned to a standard user with no approval or change request.  
 **Detection:** KQL query on AuditLogs detected unauthorised role assignment event.  
-**Key finding:** No Privileged Identity Management (PIM) controls were in place to require approval for privileged role assignment.  
-**Remediation:** Enable Privileged Identity Management (PIM); enforce just-in-time access for all admin roles.
+**Key finding:** No PIM controls in place meant privileged roles could be assigned silently.  
+**Remediation:** PIM enabled; just-in-time access enforced for all admin roles.
+
+**Analytics Rule**
+
+![Privilege Escalation Analytics Rule](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/06-privilege-escalation/privilege-escalationanalytics-rule-saved.png)
+
+**KQL AuditLog Results — Role Assignment Detected**
+
+![KQL AuditLog](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/06-privilege-escalation/privilege-escalationkql-auditlog.png)
+
+**Role Assignment Evidence**
+
+![Role Assignment](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/06-privilege-escalation/privilege-escalationrole-assignment.png)
+
+**Investigation Graph**
+
+![Investigation Graph](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/06-privilege-escalation/privilege-escalationinvestigation-graph.png)
+
+**Role Removed — Remediation Verified**
+
+![Role Removed](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/06-privilege-escalation/privilege-escalationrole-removed.png)
+
+**Sentinel Incident List**
+
+![Sentinel Incident List](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/06-privilege-escalation/privilege-escalationsentinel-incident-list.png)
 
 ---
 
 ### 5. MFA Bypass via Prompt Bombing
 
-**What happened:** 17 MFA push notification denial events in 17 minutes against the highest-privilege account in the environment.  
+**What happened:** 17 MFA push notification denial events in 17 minutes against the highest-privilege account.  
 **Detection:** KQL analytics rule triggered on high-frequency MFA denial pattern.  
-**Key finding:** Attacker relied on MFA fatigue — repeated prompts hoping the user would accidentally approve.  
-**Remediation:** Switch from push notifications to number-matching MFA; implement MFA fraud alerting.
+**Key finding:** Standard push MFA is vulnerable to fatigue attacks — no number-matching was in place.  
+**Remediation:** Switched to number-matching MFA; MFA fraud alerting enabled.
+
+**Analytics Rule**
+
+![MFA Bypass Analytics Rule](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/07-mfa-bypass/mfa-bypassanalytics-rule-mfa-bypass.png)
+
+**KQL Evidence — 17 Denial Events**
+
+![KQL Evidence](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/07-mfa-bypass/mfa-bypasskql-evidence-results.png)
+
+**Incident Detail**
+
+![Incident Detail](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/07-mfa-bypass/mfa-bypassincident-detail.png)
+
+**Investigation Graph**
+
+![Investigation Graph](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/07-mfa-bypass/mfa-bypassinvestigation-graph.png)
+
+**Sentinel Incident List**
+
+![Sentinel Incident List](https://raw.githubusercontent.com/danwise32/enterprise-soc-sentinel-lab/main/screenshots/07-mfa-bypass/mfa-bypasssentinel-incident-list.png)
 
 ---
 
 ## 🔍 Detection Engineering — KQL Highlights
 
-All custom KQL queries are in the [`/kql`](./kql) folder. Each query includes inline comments explaining the detection logic.
+All custom KQL queries are in the [`/kql`](./kql) folder. Each query includes inline comments explaining the detection logic. Every scenario has three queries: Detection Rule, Investigation Query, and Remediation Verification.
 
-Example — Brute Force detection logic:
+Example — Privilege Escalation detection logic:
 ```kql
-// Detect accounts with 10+ failed sign-ins in a 10-minute window
-SigninLogs
-| where ResultType != "0"
-| summarize FailedAttempts = count() by UserPrincipalName, bin(TimeGenerated, 10m)
-| where FailedAttempts >= 10
-| project TimeGenerated, UserPrincipalName, FailedAttempts
-| order by FailedAttempts desc
+// Detects privileged admin role assignments to any user account
+// MITRE ATT&CK: T1078.004 — Privilege Escalation
+AuditLogs
+| where TimeGenerated > ago(1h)
+| where OperationName contains "Add member to role"
+| extend
+    AssignedRole = tostring(TargetResources[0].displayName),
+    TargetUser = tostring(TargetResources[1].userPrincipalName),
+    PerformedBy = tostring(InitiatedBy.user.userPrincipalName)
+| where isnotempty(AssignedRole)
+| project TimeGenerated, AssignedRole, TargetUser, PerformedBy, Result
+| order by TimeGenerated desc
 ```
 
 ---
