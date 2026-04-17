@@ -1,6 +1,6 @@
 # 📄 SOC Incident Reports
 
-This folder contains 5 structured SOC incident reports — one for each 
+This folder contains 5 structured SOC incident reports,one for each 
 attack scenario simulated and investigated in this lab. Each report 
 follows a professional SOC format covering the full investigation 
 lifecycle from alert trigger through to remediation verification.
