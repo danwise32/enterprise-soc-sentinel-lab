@@ -1,177 +1,195 @@
-# Enterprise Security Monitoring and Identity Protection Lab
+# 🛡️ Enterprise SOC Monitoring & Identity Protection Lab
 
-A hands-on cybersecurity portfolio project simulating a real-world SOC environment
-using Microsoft Sentinel as the SIEM and Microsoft Entra ID for identity and access management.
-Built to demonstrate practical SOC analyst skills including threat detection, KQL query writing,
-incident investigation, and security reporting.
+> A hands-on cloud-based Security Operations Centre built on Microsoft Azure, simulating real-world enterprise threat detection and identity security using Microsoft Sentinel and Microsoft Entra ID.
 
----
-
-## Project Overview
-
-This lab simulates an enterprise security environment in Microsoft Azure with three user accounts
-configured at varying privilege and security levels to represent realistic identity risk profiles.
-Microsoft Sentinel is deployed and connected to Entra ID to ingest sign-in and audit logs in real time.
-Five attack scenarios were simulated and investigated, each producing a full SOC incident report,
-KQL detection query, and investigation graph analysis.
-
-**Tenant:** Cyberbulwork.onmicrosoft.com
-**Workspace:** SOCLabWorkspace
-**Region:** UK South
-**Analyst:** Daniel Owoeye-Wise
+**Built by:** Daniel Owoeye-Wise — Cybersecurity Analyst | MSc Cyber Security | CompTIA Security+  
+**GitHub:** [danwise32](https://github.com/danwise32) · **LinkedIn:** [daniel-owoeye-wise](https://www.linkedin.com/in/daniel-owoeye-wise-7157451b4)
 
 ---
 
-## Attack Scenarios Completed
+## 📌 Project Overview
 
-| Incident ID | Scenario | Severity | MITRE Tactic | MITRE Technique | Status |
-|---|---|---|---|---|---|
-| SOC-2026-001 | Brute Force Attack | High | Credential Access | T1110 | Investigated |
-| SOC-2026-002 | Impossible Travel | High | Initial Access | T1078 | Investigated |
-| SOC-2026-003 | Suspicious Login Behaviour | Medium | Initial Access | T1078 | Investigated |
-| SOC-2026-004 | Privilege Escalation | High | Privilege Escalation | T1078.004 | Investigated |
-| SOC-2026-005 | MFA Bypass Attempt | High | Credential Access | T1556.006 | Investigated |
+This project simulates a real-world enterprise SOC environment from the ground up. Using Microsoft Azure (free tier), I configured Microsoft Entra ID with three user personas, connected identity logs to Microsoft Sentinel, and built custom KQL detection rules for 5 attack scenarios — each fully investigated and documented as a structured SOC incident report.
+
+**The goal:** Demonstrate the full SOC analyst workflow — from environment setup and detection engineering, through to incident investigation, verdict, and remediation recommendations.
 
 ---
 
-## Lab Environment
+## 🗂️ How to Navigate This Repo
 
-### Identity Configuration
+| Folder | Contents |
+|--------|----------|
+| [`/docs`](./docs) | Lab setup guide — step-by-step environment build walkthrough |
+| [`/kql`](./kql) | Custom KQL detection queries for all 5 attack scenarios |
+| [`/reports`](./reports) | 5 structured SOC incident reports with verdicts and remediation |
+| [`/screenshots`](./screenshots) | Evidence screenshots from Sentinel investigations |
 
-| Account | Role | MFA | Purpose |
-|---|---|---|---|
-| labadmin@Cyberbulwork.onmicrosoft.com | Global Administrator | Enforced | High value admin target |
-| StandardUser@Cyberbulwork.onmicrosoft.com | Global Reader | Enforced | Regular employee simulation |
-| CompromisedUser@Cyberbulwork.onmicrosoft.com | None | Disabled | Deliberately vulnerable account |
-
-### Conditional Access Policies
-
-| Policy | Scope | Control |
-|---|---|---|
-| Require MFA Lab Users | Lab Admin and Standard User | Require MFA |
-| Block Legacy Authentication | All users | Block access |
-| Block High Risk Sign-ins | All users | Block access |
-
-### Microsoft Sentinel
-
-- Log Analytics Workspace: SOCLabWorkspace
-- Data connectors: Microsoft Entra ID, Microsoft Entra ID Protection
-- Log types ingested: Sign-In Logs, Audit Logs, Non-Interactive Logs, User Risk Events, Risky Users
-- Custom analytics rules: 5 scheduled rules mapped to MITRE ATT&CK
+**Suggested reading order:**
+1. Start with `/docs` to understand how the environment was built
+2. Review `/kql` to see the detection logic for each scenario
+3. Read `/reports` for the full SOC investigation findings
+4. Check `/screenshots` for visual evidence from each incident
 
 ---
 
-## Repository Structure
-enterprise-soc-sentinel-lab/
-├── docs/
-│   ├── 01-lab-setup.md
-│   ├── 02-entra-id-config.md
-│   └── 03-sentinel-setup.md
-├── kql/
-│   ├── brute-force-detection.kql
-│   ├── impossible-travel.kql
-│   ├── suspicious-login.kql
-│   ├── privilege-escalation.kql
-│   └── mfa-bypass.kql
-├── reports/
-│   ├── SOC-2026-001-BruteForce.md
-│   ├── SOC-2026-002-ImpossibleTravel.md
-│   ├── SOC-2026-003-SuspiciousLogin.md
-│   ├── SOC-2026-004-PrivEscalation.md
-│   └── SOC-2026-005-MFABypass.md
-└── screenshots/
-├── 03-brute-force/
-├── 04-impossible-travel/
-├── 05-suspicious-login/
-├── 06-privilege-escalation/
-└── 07-mfa-bypass/
+## ⚔️ Attack Scenarios Simulated & Investigated
+
+All 5 scenarios were simulated end-to-end: attack executed → KQL rule triggered → Sentinel alert fired → full investigation conducted → incident report written.
+
+| # | Scenario | MITRE ATT&CK Tactic | Severity | Verdict |
+|---|----------|-------------------|----------|---------|
+| 1 | [Brute Force Attack](#1-brute-force-attack) | Credential Access (T1110) | 🔴 High | True Positive |
+| 2 | [Impossible Travel](#2-impossible-travel) | Initial Access (T1078) | 🔴 High | True Positive |
+| 3 | [Suspicious Login Behaviour](#3-suspicious-login-behaviour) | Initial Access (T1078) | 🟡 Medium | True Positive |
+| 4 | [Privilege Escalation](#4-privilege-escalation) | Privilege Escalation (T1078.004) | 🔴 Critical | True Positive |
+| 5 | [MFA Bypass via Prompt Bombing](#5-mfa-bypass-via-prompt-bombing) | Credential Access (T1621) | 🟠 Medium–High | True Positive |
 
 ---
 
-## KQL Detection Queries
+### 1. Brute Force Attack
 
-Each scenario uses a custom KQL analytics rule running on a schedule in Microsoft Sentinel.
-All queries are stored in the kql folder with comments explaining each line.
-
-| Scenario | Key KQL Concepts Used |
-|---|---|
-| Brute Force | where, summarize, countif, bin, make_set |
-| Impossible Travel | serialize, next(), extend, project |
-| Suspicious Login | dcount, make_set, hourofday, summarize |
-| Privilege Escalation | AuditLogs, extend, tostring, TargetResources |
-| MFA Bypass | ResultType filtering, bin, summarize, count |
+**What happened:** 32 failed login attempts against a user account. Account was compromised in 64 seconds.  
+**Detection:** KQL analytics rule triggered on failed login threshold breach.  
+**Key finding:** No MFA on target account enabled rapid compromise post-credential guess.  
+**Remediation:** Enforce MFA organisation-wide; implement account lockout policy after 5 failed attempts.
 
 ---
 
-## Incident Reports
+### 2. Impossible Travel
 
-Each scenario produced a full SOC incident report covering:
-
-- Incident metadata and classification
-- Incident summary and simulation methodology
-- Analyst observations in plain English
-- KQL evidence with query results
-- Impact assessment
-- Severity justification
-- True Positive or False Positive verdict with reasoning
-- Recommended immediate, short term, and long term actions
-- Analyst sign-off
-
-All reports are available in the reports folder as markdown files.
+**What happened:** Two successful logins from geographically distant locations just 6 minutes apart — physically impossible travel time.  
+**Detection:** KQL query analysed sign-in locations and timestamps to flag geographic anomaly.  
+**Key finding:** Credential reuse across regions indicated account compromise or VPN misuse.  
+**Remediation:** Block legacy authentication; implement Conditional Access policies restricting sign-in by location.
 
 ---
 
-## Key Findings Across Scenarios
+### 3. Suspicious Login Behaviour
 
-**SOC-2026-001 Brute Force:** 32 failed login attempts followed by successful compromise in 64 seconds
-confirming an extremely weak password on the Compromised User account with no MFA protection.
-
-**SOC-2026-002 Impossible Travel:** Same account logged in from home broadband IPv4 and mobile 4G IPv6
-within 5 minutes. Initial country-based detection rule was refined to IP-based detection after
-identifying both connections geolocated to the UK.
-
-**SOC-2026-003 Suspicious Login:** Three distinct IP addresses recorded across 30 successful logins
-in 2 days including a ProtonVPN Netherlands exit node, confirming deliberate location masking.
-
-**SOC-2026-004 Privilege Escalation:** Global Administrator role assigned to Standard User account
-confirmed via AuditLogs with PerformedBy and TargetUser fields. Role removed and verified
-via remediation query.
-
-**SOC-2026-005 MFA Bypass:** 17 MFA denial events with ResultType 500121 in 17 minutes 47 seconds
-against the highest privilege account in the tenant. Single source IP confirmed targeted attack.
+**What happened:** Login activity detected from 3 distinct IP addresses within a short window, including a ProtonVPN Netherlands exit node.  
+**Detection:** KQL rule flagged multiple distinct IPs and off-hours login timing anomaly.  
+**Key finding:** VPN usage to mask origin combined with unusual login hours indicated malicious intent.  
+**Remediation:** Enforce Named Locations in Conditional Access; flag VPN exit node sign-ins for review.
 
 ---
 
-## Technologies Used
+### 4. Privilege Escalation
 
-- Microsoft Azure (Pay as you go)
-- Microsoft Sentinel (SIEM and SOAR)
-- Microsoft Entra ID (Identity Provider)
-- Microsoft Entra ID Protection
-- KQL (Kusto Query Language)
-- Microsoft Authenticator (MFA — number matching)
-- ProtonVPN (used in impossible travel and suspicious login simulations)
-- GitHub (documentation and version control)
+**What happened:** Global Administrator role silently assigned to a standard user account with no change request or approval.  
+**Detection:** KQL query on AuditLogs detected unauthorised role assignment event.  
+**Key finding:** No Privileged Identity Management (PIM) controls were in place to require approval for privileged role assignment.  
+**Remediation:** Enable Privileged Identity Management (PIM); enforce just-in-time access for all admin roles.
 
 ---
 
-## Skills Demonstrated
+### 5. MFA Bypass via Prompt Bombing
 
-- Cloud identity and access management in Microsoft Entra ID
-- SIEM configuration, data connector setup, and log ingestion
-- Custom KQL analytics rule development and iteration
-- SOC incident investigation using investigation graphs and log analysis
-- Threat detection mapped to MITRE ATT&CK framework
-- Security control implementation including MFA, Conditional Access, and RBAC
-- Professional SOC incident report writing
-- Detection rule refinement based on real environment data
+**What happened:** 17 MFA push notification denial events in 17 minutes against the highest-privilege account in the environment.  
+**Detection:** KQL analytics rule triggered on high-frequency MFA denial pattern.  
+**Key finding:** Attacker relied on MFA fatigue — repeated prompts hoping the user would accidentally approve.  
+**Remediation:** Switch from push notifications to number-matching MFA; implement MFA fraud alerting.
 
 ---
 
-## Project Status
+## 🔍 Detection Engineering — KQL Highlights
 
-**Complete** — All five attack scenarios simulated, detected, investigated, and documented.
+All custom KQL queries are in the [`/kql`](./kql) folder. Each query includes inline comments explaining the detection logic.
+
+Example — Brute Force detection logic:
+```kql
+// Detect accounts with 10+ failed sign-ins in a 10-minute window
+SigninLogs
+| where ResultType != "0"
+| summarize FailedAttempts = count() by UserPrincipalName, bin(TimeGenerated, 10m)
+| where FailedAttempts >= 10
+| project TimeGenerated, UserPrincipalName, FailedAttempts
+| order by FailedAttempts desc
+```
 
 ---
 
-## By Daniel Owoeye-Wise
+## 🏗️ Environment Architecture
+
+```
+Microsoft Azure (Free Tier)
+│
+├── Microsoft Entra ID
+│   ├── User Personas: Admin · Standard · Compromised
+│   ├── RBAC role assignments
+│   ├── MFA enforcement (Microsoft Authenticator)
+│   └── Conditional Access policies (Zero Trust aligned)
+│
+├── Log Analytics Workspace
+│   ├── Entra ID Sign-in Logs
+│   └── Entra ID Audit Logs
+│
+└── Microsoft Sentinel
+    ├── Data connectors (Entra ID → Sentinel)
+    ├── Custom KQL analytics rules (5 scenarios)
+    ├── Incident queue
+    └── Investigation graph
+```
+
+---
+
+## 🛠️ Technologies Used
+
+![Microsoft Azure](https://img.shields.io/badge/Microsoft_Azure-0089D6?style=flat&logo=microsoft-azure&logoColor=white)
+![Microsoft Sentinel](https://img.shields.io/badge/Microsoft_Sentinel-0078D4?style=flat&logo=microsoft&logoColor=white)
+![Entra ID](https://img.shields.io/badge/Microsoft_Entra_ID-0078D4?style=flat&logo=microsoft&logoColor=white)
+![KQL](https://img.shields.io/badge/KQL-Kusto_Query_Language-blue?style=flat)
+
+| Tool | Purpose |
+|------|---------|
+| Microsoft Azure | Cloud infrastructure (free tier) |
+| Microsoft Sentinel | SIEM — log ingestion, analytics rules, incident management |
+| Microsoft Entra ID | Identity provider — users, RBAC, MFA, Conditional Access |
+| KQL (Kusto Query Language) | Custom detection queries and investigation evidence |
+| Microsoft Authenticator | MFA enforcement and prompt bombing simulation |
+| MITRE ATT&CK Framework | Mapping detection rules to real-world threat tactics |
+
+---
+
+## 📋 Key Skills Demonstrated
+
+- ✅ Cloud SOC environment build and configuration
+- ✅ Identity & Access Management (IAM) — RBAC, MFA, Conditional Access, Zero Trust
+- ✅ SIEM configuration and log ingestion pipeline setup
+- ✅ Detection engineering — custom KQL analytics rules
+- ✅ MITRE ATT&CK mapping for 5 attack scenarios
+- ✅ End-to-end SOC incident investigation workflow
+- ✅ Structured incident reporting with impact assessment and remediation
+- ✅ Privileged Identity Management (PIM) principles
+
+---
+
+## 📄 SOC Incident Reports
+
+All 5 reports are in the [`/reports`](./reports) folder. Each report follows a structured SOC format:
+
+- **Incident Summary** — what triggered the alert
+- **Evidence** — KQL query output and AuditLog findings
+- **Investigation** — Sentinel investigation graph analysis
+- **Verdict** — True Positive / False Positive with reasoning
+- **Impact Assessment** — potential business impact if undetected
+- **Remediation Recommendations** — specific mitigations and controls
+
+---
+
+## 🚀 Project Status
+
+✅ **Completed** — All 5 scenarios simulated, detected, investigated, and documented.
+
+---
+
+## 📬 Contact
+
+If you're a recruiter, hiring manager, or fellow cybersecurity professional and want to discuss this project:
+
+- **LinkedIn:** [Daniel Owoeye-Wise](https://www.linkedin.com/in/daniel-owoeye-wise-7157451b4)
+- **Email:** danielwise997@gmail.com
+- **GitHub:** [danwise32](https://github.com/danwise32)
+
+---
+
+*This project was built independently as a portfolio piece to demonstrate practical SOC analyst capabilities. All simulations were conducted in a controlled, isolated Azure environment.*
